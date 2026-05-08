@@ -7,6 +7,12 @@ from django.urls import reverse
 
 import sqlite3
 
+# formulario utilizado para edicao de registros de categorias
+class CategoriaForm(forms.Form):
+    id = forms.IntegerField(label='ID', widget=forms.TextInput(attrs={'readonly': 'readonly'}), required=False)
+    descricao = forms.CharField(label='Descrição', max_length=30, required=True)
+
+
 # Método responsavel por listar, incluir, alterar e excluir as Categorias.
 def categorias(request, acao=None, id=None):
     '''
@@ -29,73 +35,25 @@ def categorias(request, acao=None, id=None):
         # Listar registros
         # 'categorias/': Exibir a pagina de listagem
         if acao is None:
-            # define o comando SQL que será executado
-            sql = '''
-                SELECT  id, 
-                        descricao
-                FROM Categoria 
-                ORDER BY descricao
-            '''
-            
-            # cria um cursor(), executa o SELECT informado e traz os todos os registros
-            registros = conexao.cursor().execute(sql).fetchall()
-
-            # define a pagina a ser carregada, adicionando os registros das tabelas 
-            return render(request, 'categorias_listar.html', context={'registros': registros})
+            listarRegistro(request, conexao)
+        
         
         # Salvar registro
         # 'categorias/salvar/': insere, altera ou exclui um registro
         elif acao == 'salvar':
-            form_data = request.POST
-            acao_form = form_data['acao']
-
-            if acao_form == 'Inclusão':
-                sql = f"INSERT INTO Categoria(descricao) VALUES('{form_data['descricao']}')"
-
-            elif acao_form == 'Exclusão':
-                sql = f"DELETE FROM Categoria WHERE id = {form_data['id']}"
-
-            else:
-                sql = f'''
-                    UPDATE Categoria 
-                    SET descricao = '{form_data['descricao']}' 
-                    WHERE id = {form_data['id']}
-                '''
-
-            # cria um cursor() e executa o SQL informado
-            conexao.cursor().execute(sql)
-            conexao.commit()
-
-            # Sempre retornar um HttpResponseRedirect após processar dados "POST". 
-            # Isso evita que os dados sejam postados 2 vezes caso usuário clicar "Voltar".
-            return HttpResponseRedirect( reverse("categorias") )
+            salvarRegistro(request, conexao)
+        
         
         # inserir registro
         # 'categorias/incluir/': Exibir a pagina de inclusão
         elif acao == 'incluir':
-            return render(request, 'categorias_editar.html',
-                           context={'acao': 'Inclusão', 'form': CategoriaForm() })
+            def incluirRegistro(request)
         
         # Alterar ou excluir registro
         # 'categorias/alterar/<:id>/': Exibir a pagina de alteração
         # 'categorias/excluir/<:id>/': Exibir a pagina de exclusão
         elif acao in ['alterar', 'excluir']:
-            # seleciona o registro pelo id informado
-            sql = f'''
-                SELECT  id, 
-                        descricao 
-                FROM Categoria 
-                WHERE id={id}
-            '''
-
-            # cria um cursor(), executa o SELECT para retornar o registro pelo ID
-            registro = conexao.cursor().execute(sql).fetchone()
-            registro_dict = {'id': registro[0], 'descricao': registro[1]}
-
-            acao = 'Alteração' if acao == 'alterar' else 'Exclusão'
-
-            return render(request, 'categorias_editar.html', 
-                           context={'acao': acao, 'form': CategoriaForm(initial=registro_dict) })
+            alterarRegistro(request, conexao)
         
         # acao INVALIDA
         else:
@@ -104,14 +62,116 @@ def categorias(request, acao=None, id=None):
     # se ocorreu algunm erro, insere a mensagem para ser exibida no contexto da página 
     except Exception as err:
         return render(request, 'home.html', context={'ERRO': err})
+    
+
+
+
+def listarRegistro(request, conexao):
+    # define o comando SQL que será executado
+    sql = '''
+        SELECT  id, 
+                descricao
+        FROM Categoria 
+        ORDER BY descricao
+    '''
+                
+    # cria um cursor(), executa o SELECT informado e traz os todos os registros
+    registros = conexao.cursor().execute(sql).fetchall()
+
+    # define a pagina a ser carregada, adicionando os registros das tabelas 
+    return render(request, 'categorias_listar.html', context={'registros': registros})
+
+
+
+def salvarRegistro(request, conexao):
+    form_data = request.POST
+    acao_form = form_data['acao']
+
+    if acao_form == 'Inclusão':
+        salvarCategoria(conexao, form_data)
+
+    elif acao_form == 'Exclusão':
+        deletarCategoria(conexao, form_data)
+
+    else:
+        AtualizarCategoria(conexao, form_data)
+
+    # Sempre retornar um HttpResponseRedirect após processar dados "POST". 
+    # Isso evita que os dados sejam postados 2 vezes caso usuário clicar "Voltar".
+    return HttpResponseRedirect( reverse("categorias") )
+
+def salvarCategoria(conexao, form_data):
+    sql = f"INSERT INTO Categoria(descricao) VALUES('{form_data['descricao']}')"
+
+    # cria um cursor() e executa o SQL informado
+    conexao.cursor().execute(sql)
+    conexao.commit()
+
+
+def deletarCategoria(conexao, form_data):
+    sql = f"DELETE FROM Categoria WHERE id = {form_data['id']}"
+
+    # cria um cursor() e executa o SQL informado
+    conexao.cursor().execute(sql)
+    conexao.commit()
+
+
+def AtualizarCategoria(conexao, form_data):
+    sql = f'''
+        UPDATE Categoria 
+        SET descricao = '{form_data['descricao']}' 
+        WHERE id = {form_data['id']}
+    '''
+
+    # cria um cursor() e executa o SQL informado
+    conexao.cursor().execute(sql)
+    conexao.commit()
+
+
+
+def incluirRegistro(request):
+    return render(request, 'categorias_editar.html', context={'acao': 'Inclusão', 'form': CategoriaForm() })
+        
+
+
+def alterarRegistro(request, conexao):
+    # seleciona o registro pelo id informado
+    sql = f'''
+        SELECT  id, 
+                descricao 
+        FROM Categoria 
+        WHERE id={id}
+    '''
+
+    # cria um cursor(), executa o SELECT para retornar o registro pelo ID
+    registro = conexao.cursor().execute(sql).fetchone()
+    registro_dict = {'id': registro[0], 'descricao': registro[1]}
+
+    acao = 'Alteração' if acao == 'alterar' else 'Exclusão'
+
+    return render(request, 'categorias_editar.html', context={'acao': acao, 'form': CategoriaForm(initial=registro_dict) })
 
 
 
 
+# formulario utilizado para edicao de registros de produtos
+class ProdutoForm(forms.Form):
+    id = forms.IntegerField(label='ID', widget=forms.TextInput(attrs={'readonly': 'readonly'}), required=False)
+    descricao = forms.CharField(label='Descrição', max_length=30, required=True)
+    preco_unitario = forms.DecimalField(label='Preço Unitário', max_digits=10, decimal_places=2, required=True)
+    quantidade_estoque = forms.IntegerField(label='Qtd. Estoque', required=True)
+    categoria_id = forms.ChoiceField(label='Categoria', required=True)
 
-
-
-
+    # construtor do Formulario
+    def __init__(self, *args, **kwargs):
+            # chama construtor da classe-Pai
+            super().__init__(*args, **kwargs)
+            # obtem a conexao com o banco de dados
+            conexao = sqlite3.connect('db_solid.sqlite3')
+            # obtem os registros da tabela Departamentos
+            categorias = conexao.cursor().execute('SELECT id, descricao FROM Categoria ORDER BY descricao').fetchall()
+            # carrega as categorias no <select> da página usando o ChoiceField
+            self.fields['categoria_id'].choices = categorias
 
 
 
@@ -137,26 +197,7 @@ def produtos(request, acao=None, id=None):
         # Listar registros
         # 'produtos/': Exibir a pagina de listagem
         if acao is None:
-            # define o comando SQL que será executado
-            sql = '''
-                SELECT  pro.id,
-                        pro.descricao, 
-                        pro.preco_unitario,
-                        pro.quantidade_estoque,
-                        pro.categoria_id,
-                        cat.descricao as 'categoria'
-                        
-                FROM Produto pro
-                INNER JOIN Categoria cat ON cat.id = pro.categoria_id
-
-                ORDER BY pro.descricao
-            '''
-            
-            # cria um cursor(), executa o SELECT informado e traz os todos os registros
-            registros = conexao.cursor().execute(sql).fetchall()
-
-            # define a pagina a ser carregada, adicionando os registros das tabelas 
-            return render(request, 'produtos_listar.html', context={'registros': registros})
+            ListarProfuto(request, conexao)
         
         # Salvar registro
         # 'produtos/salvar/': insere, altera ou exclui um registro
@@ -257,3 +298,28 @@ def home(request):
     # define a página HTML (template) que deverá será carregada
     template = 'home.html'
     return render(request, template)
+
+
+
+
+def ListarProfuto(request, conexao):
+    # define o comando SQL que será executado
+    sql = '''
+        SELECT  pro.id,
+                pro.descricao, 
+                pro.preco_unitario,
+                pro.quantidade_estoque,
+                pro.categoria_id,
+                cat.descricao as 'categoria'
+                    
+        FROM Produto pro
+        INNER JOIN Categoria cat ON cat.id = pro.categoria_id
+
+        ORDER BY pro.descricao
+    '''
+            
+    # cria um cursor(), executa o SELECT informado e traz os todos os registros
+    registros = conexao.cursor().execute(sql).fetchall()
+
+    # define a pagina a ser carregada, adicionando os registros das tabelas 
+    return render(request, 'produtos_listar.html', context={'registros': registros})
