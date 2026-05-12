@@ -1,11 +1,5 @@
-import sys
-
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
 from django import forms
-from django.urls import reverse
 
-import sqlite3
 
 # formulario utilizado para edicao de registros de categorias
 class CategoriaForm(forms.Form):
