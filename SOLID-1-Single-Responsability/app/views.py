@@ -302,28 +302,3 @@ def home(request):
     # define a página HTML (template) que deverá será carregada
     template = 'home.html'
     return render(request, template)
-
-
-
-
-def ListarProfuto(request, conexao):
-    # define o comando SQL que será executado
-    sql = '''
-        SELECT  pro.id,
-                pro.descricao, 
-                pro.preco_unitario,
-                pro.quantidade_estoque,
-                pro.categoria_id,
-                cat.descricao as 'categoria'
-                    
-        FROM Produto pro
-        INNER JOIN Categoria cat ON cat.id = pro.categoria_id
-
-        ORDER BY pro.descricao
-    '''
-            
-    # cria um cursor(), executa o SELECT informado e traz os todos os registros
-    registros = conexao.cursor().execute(sql).fetchall()
-
-    # define a pagina a ser carregada, adicionando os registros das tabelas 
-    return render(request, 'produtos_listar.html', context={'registros': registros})
