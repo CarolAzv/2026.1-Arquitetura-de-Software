@@ -30,23 +30,27 @@ def categorias(request, acao=None, id=None):
         # Listar registros
         # 'categorias/': Exibir a pagina de listagem
         if acao is None:
-            categoriaListar(request, conexao)
+            registros = categoriaListar(request, conexao)
+            return render(request, 'categorias_listar.html', context={'registros': registros})
+
         
         # Salvar registro
         # 'categorias/salvar/': insere, altera ou exclui um registro
         elif acao == 'salvar':
             categoriaSalvar(request, conexao)
+            return HttpResponseRedirect( reverse("categorias") )
         
         # inserir registro
         # 'categorias/incluir/': Exibir a pagina de inclusão
         elif acao == 'incluir':
-            categoriaIncluir(request)
+            return render(request, 'categorias_editar.html', context={'acao': 'Inclusão', 'form': CategoriaForm() })
         
         # Alterar ou excluir registro
         # 'categorias/alterar/<:id>/': Exibir a pagina de alteração
         # 'categorias/excluir/<:id>/': Exibir a pagina de exclusão
         elif acao in ['alterar', 'excluir']:
-            categoriaExAlt(request, conexao, id, acao)
+            registro_dict = categoriaExAlt(request, conexao, id, acao)
+            return render(request, 'categorias_editar.html', context={'acao': acao, 'form': CategoriaForm(initial=registro_dict) })
         
         # acao INVALIDA
         else:
@@ -72,8 +76,7 @@ def categoriaListar(request, conexao):
     registros = conexao.cursor().execute(sql).fetchall()
 
     # define a pagina a ser carregada, adicionando os registros das tabelas 
-    return render(request, 'categorias_listar.html', context={'registros': registros})
-
+    return registros
 
 # Método responsavel por incluir, excluir e alterar
 def categoriaSalvar(request, conexao):
@@ -96,19 +99,9 @@ def categoriaSalvar(request, conexao):
     # cria um cursor() e executa o SQL informado
     conexao.cursor().execute(sql)
     conexao.commit()
-    # cria um cursor() e executa o SQL informado
-    conexao.cursor().execute(sql)
-    conexao.commit()
 
     # Sempre retornar um HttpResponseRedirect após processar dados "POST". 
     # Isso evita que os dados sejam postados 2 vezes caso usuário clicar "Voltar".
-    return HttpResponseRedirect( reverse("categorias") )
-
-
-# Método responsavel por incluir
-def categoriaIncluir(request):
-    return render(request, 'categorias_editar.html', context={'acao': 'Inclusão', 'form': CategoriaForm() })
-
 
 # Método responsavel por alterar e excluir.
 def categoriaExAlt(request, conexao, id, acao):
@@ -130,7 +123,7 @@ def categoriaExAlt(request, conexao, id, acao):
     acao = 'Alteração' if acao == 'alterar' else 'Exclusão'
     acao = 'Alteração' if acao == 'alterar' else 'Exclusão'
 
-    return render(request, 'categorias_editar.html', context={'acao': acao, 'form': CategoriaForm(initial=registro_dict) })
+    return registro_dict
 
 
 #--------------------------------------------------------------------------------------------------------------------------#
@@ -158,23 +151,26 @@ def produtos(request, acao=None, id=None):
         # Listar registros
         # 'produtos/': Exibir a pagina de listagem
         if acao is None:
-            produtoListar(request, conexao)
+            registros = produtoListar(request, conexao)
+            return render(request, 'produtos_listar.html', context={'registros': registros})
         
         # Salvar registro
         # 'produtos/salvar/': insere, altera ou exclui um registro
         elif acao == 'salvar':
             produtoSalvar(request, conexao)
+            return HttpResponseRedirect( reverse("produtos") )
         
         # inserir registro
         # 'produtos/incluir/': Exibir a pagina de inclusão
         elif acao == 'incluir':
-            produtoInserir(request)
+            return render(request, 'produtos_editar.html', context={'acao': 'Inclusão', 'form': ProdutoForm() })
         
         # Alterar ou excluir registro
         # 'produtos/alterar/<:id>/': Exibir a pagina de alteração
         # 'produtos/excluir/<:id>/': Exibir a pagina de exclusão
         elif acao in ['alterar', 'excluir']:
-            produtoAltEx(request, conexao, id, acao)
+            registro_dict = produtoAltEx(request, conexao, id, acao)
+            return render(request, 'produtos_editar.html', context={'acao': acao, 'form': ProdutoForm(initial=registro_dict) })
         
         # acao INVALIDA
         else:
@@ -207,7 +203,7 @@ def produtoListar(request, conexao):
     registros = conexao.cursor().execute(sql).fetchall()
 
     # define a pagina a ser carregada, adicionando os registros das tabelas 
-    return render(request, 'produtos_listar.html', context={'registros': registros})
+    return registros
 
 
 # Método responsavel por incluir, alterar e excluir
@@ -250,12 +246,6 @@ def produtoSalvar(request, conexao):
 
     # Sempre retornar um HttpResponseRedirect após processar dados "POST". 
     # Isso evita que os dados sejam postados 2 vezes caso usuário clicar "Voltar".
-    return HttpResponseRedirect( reverse("produtos") )
-
-
-# Método responsavel por incluir
-def produtoInserir(request):
-    return render(request, 'produtos_editar.html', context={'acao': 'Inclusão', 'form': ProdutoForm() })
 
 
 # Método responsavel por alterar e excluir
@@ -287,8 +277,7 @@ def produtoAltEx(request, conexao, id, acao):
     }
 
     acao = 'Alteração' if acao == 'alterar' else 'Exclusão'
-
-    return render(request, 'produtos_editar.html', context={'acao': acao, 'form': ProdutoForm(initial=registro_dict) })
+    return registro_dict
         
         
 
