@@ -37,8 +37,6 @@ def categorias(request, acao=None, id=None):
             form_data = request.POST
             acao_form = form_data['acao']
 
-            AAAAAAAA
-
             # Sempre retornar um HttpResponseRedirect após processar dados "POST". 
             # Isso evita que os dados sejam postados 2 vezes caso usuário clicar "Voltar".
             return HttpResponseRedirect( reverse("categorias") )
