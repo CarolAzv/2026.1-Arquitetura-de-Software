@@ -1,12 +1,12 @@
-from IProdutoService import IProdutoService
-from ProdutoDAO import ProdutoDAO
+from app.services.repository.IProdutoService import IProdutoService
+from app.implementatio.DAO.ProdutoDAO import ProdutoDAO
 
 class ProdutoService(IProdutoService):
     def __init__(self, dao: ProdutoDAO = None):
         self._dao = dao or ProdutoDAO()
  
  
-    def validar(self, produto, checar_id=False):
+    def Validar(self, produto, checar_id=False):
         erros = []
  
         if checar_id:
@@ -15,27 +15,27 @@ class ProdutoService(IProdutoService):
             elif not isinstance(produto.id, int) or produto.id <= 0:
                 erros.append("O campo 'id' deve ser um inteiro positivo.")
 
-        nome = getattr(produto, "nome", None)
+        descricao = getattr(produto, "descricao", None)
  
-        if not nome:
-            erros.append("O campo 'nome' é obrigatório.")
-        elif not isinstance(nome, str):
-            erros.append("O campo 'nome' deve ser uma string.")
-        elif len(nome.strip()) < 2:
-            erros.append("O campo 'nome' deve ter pelo menos 2 caracteres.")
-        elif len(nome.strip()) > 255:
-            erros.append("O campo 'nome' deve ter no máximo 255 caracteres.")
+        if not descricao:
+            erros.append("O campo 'descrição' é obrigatório.")
+        elif not isinstance(descricao, str):
+            erros.append("O campo 'descrição' deve ser uma string.")
+        elif len(descricao.strip()) < 2:
+            erros.append("O campo 'descrição' deve ter pelo menos 2 caracteres.")
+        elif len(descricao.strip()) > 255:
+            erros.append("O campo 'descrição' deve ter no máximo 255 caracteres.")
  
         return erros
  
  
     def Incluir(self, produto):
-        erros = self.validar(produto, checar_id=False)
+        erros = self.Validar(produto, checar_id=False)
  
         if erros:
             raise ValueError(f"Erro de validação ao incluir produto: {'; '.join(erros)}")
  
-        produto.nome = produto.nome.strip()
+        produto.descricao = produto.descricao.strip()
         novo_id = self._dao.produtoIncluir(produto)
  
         if not novo_id:
@@ -45,7 +45,7 @@ class ProdutoService(IProdutoService):
  
  
     def Alterar(self, produto):
-        erros = self.validar(produto, checar_id=True)
+        erros = self.Validar(produto, checar_id=True)
  
         if erros:
             raise ValueError(f"Erro de validação ao alterar produto: {'; '.join(erros)}")
@@ -55,7 +55,7 @@ class ProdutoService(IProdutoService):
         if not existente:
             raise LookupError(f"Produto com id={produto.id} não encontrado.")
  
-        produto.nome = produto.nome.strip()
+        produto.descricao = produto.descricao.strip()
         alterar = self._dao.produtoAlterar(produto)
  
         if not alterar:

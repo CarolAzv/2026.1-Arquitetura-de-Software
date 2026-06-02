@@ -1,4 +1,4 @@
-from ICategoriaDAO import (categoriaIncluir, categoriaAlterar, categoriaExcluir, categoriaObter_por_id, categoriaListar, )
+from app.services.DAO.ICategoriaDAO import (categoriaIncluir, categoriaAlterar, categoriaExcluir, categoriaObter_por_id, categoriaListar, )
 
 class ICategoriaService:
 

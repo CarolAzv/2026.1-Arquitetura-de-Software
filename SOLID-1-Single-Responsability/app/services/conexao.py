@@ -1,19 +1,19 @@
-import sys
 import sqlite3
+
+_conexao = None
 
 
 def obterConexao():
-    # obtem a conexao com o banco de dados
     conexao = sqlite3.connect('db_solid.sqlite3')
-    # comando para não permitir DELETE CASCADE (exclusão em cascata)
-    conexao.execute("PRAGMA foreign_keys = ON;") 
+    conexao.execute("PRAGMA foreign_keys = ON;")
     return conexao
 
+
 def Conectar():
-    private static sqlite3.Connection conexao = null;
-    if(conexao == null):
+    global _conexao
+    if _conexao is None:
         try:
-            conexao = obterConexao()
+            _conexao = obterConexao()
         except Exception as e:
             print(f"Erro ao conectar ao banco de dados: {e}")
-    return conexao
+    return _conexao

@@ -1,27 +1,26 @@
-from conexao import Conectar
-from ICategoriaDAO import ICategoriaDAO
+from app.services.conexao import Conectar
  
 
-class CategoriaDAO(ICategoriaDAO):
+class CategoriaDAO:
     def __init__(self):
         self._conexao = Conectar()
  
  
     def categoriaIncluir(self, categoria):
-        return self._conexao.execute( "INSERT INTO categoria (nome) VALUES (?)", (categoria.nome,) ).lastrowid
+        return self._conexao.execute( "INSERT INTO Categoria (descricao) VALUES (?)", (categoria.descricao,) ).lastrowid
  
  
     def categoriaAlterar(self, categoria):
-        return self._conexao.execute( "UPDATE categoria SET nome = ? WHERE id = ?", (categoria.nome, categoria.id) ).rowcount
+        return self._conexao.execute( "UPDATE Categoria SET descricao = ? WHERE id = ?", (categoria.descricao, categoria.id) ).rowcount
  
  
     def categoriaExcluir(self, categoria):
-        return self._conexao.execute( "DELETE FROM categoria WHERE id = ?", (categoria.id,) ).rowcount
+        return self._conexao.execute( "DELETE FROM Categoria WHERE id = ?", (categoria.id,) ).rowcount
 
  
     def categoriaObter_por_id(self, id):
-        return self._conexao.execute( "SELECT * FROM categoria WHERE id = ?", (id,) ).fetchone()
+        return self._conexao.execute( "SELECT * FROM Categoria WHERE id = ?", (id,) ).fetchone()
  
  
     def categoriaListar(self):
-        return self._conexao.execute( "SELECT * FROM categoria" ).fetchall()
+        return self._conexao.execute( "SELECT * FROM Categoria" ).fetchall()

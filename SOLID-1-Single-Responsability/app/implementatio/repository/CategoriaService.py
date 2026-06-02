@@ -1,12 +1,12 @@
-from ICategoriaService import ICategoriaService
-from CategoriaDAO import CategoriaDAO
+from app.services.repository.ICategoriaService import ICategoriaService
+from app.implementatio.DAO.CategoriaDAO import CategoriaDAO
 
 class CategoriaService(ICategoriaService):
     def __init__(self, dao: CategoriaDAO = None):
         self._dao = dao or CategoriaDAO()
  
  
-    def validar(self, categoria, checar_id=False):
+    def Validar(self, categoria, checar_id=False):
         erros = []
  
         if checar_id:
@@ -15,37 +15,37 @@ class CategoriaService(ICategoriaService):
             elif not isinstance(categoria.id, int) or categoria.id <= 0:
                 erros.append("O campo 'id' deve ser um inteiro positivo.")
 
-        nome = getattr(categoria, "nome", None)
+        descricao = getattr(categoria, "descricao", None)
  
-        if not nome:
-            erros.append("O campo 'nome' é obrigatório.")
-        elif not isinstance(nome, str):
-            erros.append("O campo 'nome' deve ser uma string.")
-        elif len(nome.strip()) < 2:
-            erros.append("O campo 'nome' deve ter pelo menos 2 caracteres.")
-        elif len(nome.strip()) > 255:
-            erros.append("O campo 'nome' deve ter no máximo 255 caracteres.")
+        if not descricao:
+            erros.append("O campo 'descrição' é obrigatório.")
+        elif not isinstance(descricao, str):
+            erros.append("O campo 'descrição' deve ser uma string.")
+        elif len(descricao.strip()) < 2:
+            erros.append("O campo 'descrição' deve ter pelo menos 2 caracteres.")
+        elif len(descricao.strip()) > 255:
+            erros.append("O campo 'descrição' deve ter no máximo 255 caracteres.")
  
         return erros
 
  
     def Incluir(self, categoria):
-        erros = self.validar(categoria, checar_id=False)
+        erros = self.Validar(categoria, checar_id=False)
  
         if erros:
             raise ValueError(f"Erro de validação ao incluir categoria: {'; '.join(erros)}")
  
-        categoria.nome = categoria.nome.strip()
+        categoria.descricao = categoria.descricao.strip()
         novo_id = self._dao.categoriaIncluir(categoria)
  
         if not novo_id:
-            raise RuntimeError("Falha ao incluir o categoria no banco de dados.")
+            raise RuntimeError("Falha ao incluir a categoria no banco de dados.")
  
         return novo_id
  
  
     def Alterar(self, categoria):
-        erros = self.validar(categoria, checar_id=True)
+        erros = self.Validar(categoria, checar_id=True)
  
         if erros:
             raise ValueError(f"Erro de validação ao alterar categoria: {'; '.join(erros)}")
@@ -53,9 +53,9 @@ class CategoriaService(ICategoriaService):
         existente = self._dao.categoriaObter_por_id(categoria.id)
  
         if not existente:
-            raise LookupError(f"categoria com id={categoria.id} não encontrado.")
+            raise LookupError(f"Categoria com id={categoria.id} não encontrado.")
  
-        categoria.nome = categoria.nome.strip()
+        categoria.descricao = categoria.descricao.strip()
         alterar = self._dao.categoriaAlterar(categoria)
  
         if not alterar:
@@ -66,12 +66,12 @@ class CategoriaService(ICategoriaService):
  
     def Excluir(self, categoria):
         if not getattr(categoria, "id", None):
-            raise ValueError("O campo 'id' é obrigatório para excluir um categoria.")
+            raise ValueError("O campo 'id' é obrigatório para excluir uma categoria.")
  
         praRemover = self._dao.categoriaObter_por_id(categoria.id)
  
         if not praRemover:
-            raise LookupError(f"categoria com id={categoria.id} não encontrado.")
+            raise LookupError(f"Categoria com id={categoria.id} não encontrado.")
  
         self._dao.categoriaExcluir(categoria)
  

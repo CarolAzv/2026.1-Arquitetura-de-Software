@@ -1,4 +1,4 @@
-from IProdutoDAO import (produtoIncluir, produtoAlterar, produtoExcluir, produtoObter_por_id, produtoListar, )
+from app.services.DAO.IProdutoDAO import (produtoIncluir, produtoAlterar, produtoExcluir, produtoObter_por_id, produtoListar, )
 
 class IProdutoService:
 
