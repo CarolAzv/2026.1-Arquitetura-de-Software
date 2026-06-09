@@ -4,7 +4,7 @@ _conexao = None
 
 
 def obterConexao():
-    conexao = sqlite3.connect('db_solid.sqlite3')
+    conexao = sqlite3.connect('db_solid.sqlite3', check_same_thread=False)
     conexao.execute("PRAGMA foreign_keys = ON;")
     return conexao
 

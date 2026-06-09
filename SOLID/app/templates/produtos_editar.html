@@ -15,23 +15,21 @@
     {% if acao == 'Exclusão' %}
         <p>Deseja realmente excluir este registro?</p>
         <br>
-        <input type="hidden" id="id" name="id" value="{{form.id.value}}">
 
-        <fieldset disabled>
-    {% endif%}
+        <!-- Campos como hidden inputs para exclusão -->
+        {{ form.id }}
+        <input type="hidden" name="descricao" value="{{ form.descricao.value }}">
+        <input type="hidden" name="preco_unitario" value="{{ form.preco_unitario.value }}">
+        <input type="hidden" name="quantidade_estoque" value="{{ form.quantidade_estoque.value }}">
+        <input type="hidden" name="categoria_id" value="{{ form.categoria_id.value }}">
 
-
-
-    <!-- CAMPOS DEFINIDOS NO FORMULARIO -->
-    {{ form.as_p}}
-
-    <br><br>
-
-    <label for=""></label>
-    {% if acao == 'Exclusão' %}
-        </fieldset>
         <input class="btn-del" type="submit" value="Excluir">
     {% else %}
+        <!-- CAMPOS VISÍVEIS PARA INCLUSÃO/ALTERAÇÃO -->
+        {{ form.as_p}}
+
+        <br><br>
+
         <button class="btn" type="submit">Salvar</button>
     {% endif %}
     &nbsp;
