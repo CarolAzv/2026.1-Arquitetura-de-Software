@@ -7,7 +7,7 @@ from core.domain.services.interfaces_dao import ICategoriaDAO, IConexaoBD, IProd
 
 from termcolor import colored, cprint
 
-
+"""
 class ConexaoBD(IConexaoBD):
 
     # variável para armazenar a instância única da classe (singleton)
@@ -40,6 +40,68 @@ class ConexaoBD(IConexaoBD):
     def obter_conexao(self):
         '''Estabelece a conexao com o SQLite usando o padrão Singleton'''
         return self.__singleton.__conexao
+    
+    def executar_comando(self, sql_comando, commit=True) -> Any:
+        '''Executa um comando SQL no BD (geralmente um INSERT, UPDATE ou DELETE)'''
+        # obtem conexao
+        conexao = self.obter_conexao()
+        # cria um cursor() e executa o SQL informado
+        ret = conexao.cursor().execute(sql_comando)
+        # verifica se eh para efetivar as modificações no BD
+        if commit:
+            conexao.commit()
+        # retorna o resultado da execução do comando SQL
+        return ret 
+
+    def executar_select(self, sql_select) -> list[Any]:
+        '''Executa um comando SELECT no BD e retorna os registros'''
+        # obtem conexao
+        conexao = self.obter_conexao()
+        # cria um cursor(), executa o SELECT informado e traz os todos os registros
+        ret = conexao.cursor().execute(sql_select).fetchall()
+        # retorna os registros do BD
+        return ret 
+"""
+
+
+# meu
+class ConexaoBD(IConexaoBD):
+
+    # variável para armazenar a instância única da classe (singleton)
+    _conexoes: list = [None, None, None, None, None]
+    _qual: int = 0 
+
+    # método especial __new__ é chamado antes do __init__ e 
+    # é responsável por criar a instância da classe
+    def __new__(cls):
+        
+        # se nenhuma instância foi criada ainda, cria uma nova 
+        # instância e armazena na variável __singleton
+        for i, sing in enumerate(cls._conexoes):
+            if sing is None:
+            
+                # cria instância única (singleton)
+                instancia = super().__new__(cls)
+
+                # cria uma conexao com o BD e armazena na instância única (singleton)
+                instancia._conexao = sqlite3.connect('db_solid.sqlite3')
+                
+                # comando para não permitir DELETE CASCADE (exclusão em cascata)
+                instancia._conexao.execute("PRAGMA foreign_keys = ON;")
+                cls._conexoes[i] = instancia
+            
+                # mensagem para debug
+                cprint(f'\n ** Conectou ao Banco de Dados (slot {i}) ** \n',
+                    "white", "on_light_red", attrs=['bold'])
+        
+        # retorna uma instância da conexão com o BD
+        return cls._conexoes[0]
+
+    def obter_conexao(self):
+        '''Estabelece a conexao com o SQLite usando o padrão Singleton'''
+        conexao = ConexaoBD._conexoes[ConexaoBD._qual]
+        ConexaoBD._qual = (ConexaoBD._qual + 1) % len(ConexaoBD._conexoes)
+        return conexao._conexao
     
     def executar_comando(self, sql_comando, commit=True) -> Any:
         '''Executa um comando SQL no BD (geralmente um INSERT, UPDATE ou DELETE)'''
